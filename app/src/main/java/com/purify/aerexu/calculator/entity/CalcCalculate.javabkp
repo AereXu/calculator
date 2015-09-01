@@ -1,0 +1,346 @@
+package com.purify.aerexu.calculator.entity;
+
+import java.math.BigDecimal;
+
+/**
+ * Created by AereXu on 2015/8/23.
+ */
+public class CalcCalculate {
+    public static final int MAX_LENGTH = 32;
+    public static final long XX_CARRY = 10;
+    private String CalcShowStr;
+    private CalcOperaTypes preMathOpera;
+    private CalcOperaTypes newMathOpera;
+    private CalcOperaTypes foreMathOpera;
+    private boolean illegalStatus;
+
+    public CalcCalculate() {
+        CalcShowStr = "";
+        preMathOpera = CalcOperaTypes.NUL;
+        newMathOpera = CalcOperaTypes.NUL;
+        illegalStatus = false;
+    }
+
+    public void refreshCalcData(CalcData calcData) {
+        if (illegalStatus) {
+            switch (calcData.getCalcOperaTypes()) {
+                case CLE:
+                case CLR:
+                    illegalStatus = false;
+                    preMathOpera = CalcOperaTypes.EQL;
+                    newMathOpera = CalcOperaTypes.EQL;
+                    calcData.setResultValue(new BigDecimal("0"));
+                    calcData.setIntermediateValue(new BigDecimal("0"));
+                    calcData.setIntegerStr("0");
+                    calcData.setDecimalStr("");
+                    calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+                    calcData.setDotStatus(false);
+                    CalcShowStr = calcData.getIntermediateValue().toString();
+            }
+        } else {
+            if (calcData.getOperaCounts() == CalcData.OPERA_CNT_ONCE) {//Operation like add, sub, mul, is on
+                if (newMathOpera == CalcOperaTypes.EQL) {
+                    calcData.setIntermediateValue(calcData.getResultValue());
+                }
+                switch (calcData.getCalcOperaTypes()) {
+                    case DOT:
+                        calcData.setDotStatus(true);
+                        calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+                        preMathOpera = newMathOpera;
+                        if (newMathOpera == CalcOperaTypes.EQL) {
+                            calcData.setIntermediateValue(new BigDecimal("0"));
+                        }
+                        if (calcData.getIntermediateValue().toString().contains(".")) {
+                            CalcShowStr = calcData.getIntermediateValue().toString();
+                        } else {
+                            CalcShowStr = calcData.getIntermediateValue().toString() + ".";
+                        }
+                        break;
+                    case SQR:
+                        if (foreMathOpera == CalcOperaTypes.EQL) { // 2 * 3 = * sqrt_
+                            calcData.setIntermediateValue(calcData.getResultValue());
+                        } else if (foreMathOpera == CalcOperaTypes.NUL) { // 8 sqrt_ *
+                            calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+                            if (newMathOpera != CalcOperaTypes.EQL && newMathOpera != CalcOperaTypes.NUL) { // 8 sqrt * sqrt_
+                                calcData.setIntermediateValue(calcData.getResultValue());
+                                preMathOpera = newMathOpera;
+                            }
+                        }
+                        if (calcData.getIntermediateValue().compareTo(new BigDecimal("0")) < 0) {
+                            illegalStatus = true;
+                            CalcShowStr = "Illegal input!";
+                            return;
+                        }
+                        calcData.setIntermediateValue(BigDecimalSqrt(calcData.getIntermediateValue(), MAX_LENGTH));
+                        calcData.setIntegerStr("0");
+                        calcData.setDecimalStr("");
+                        calcData.setDotStatus(false);
+                        CalcShowStr = calcData.getIntermediateValue().toString();
+                        if (foreMathOpera == CalcOperaTypes.NUL && newMathOpera != CalcOperaTypes.EQL && newMathOpera != CalcOperaTypes.NUL) { // 8 sqrt * sqrt *sqrt_
+                            calcData.setResultValue(calcData.getIntermediateValue());
+                        }
+//                        if (preMathOpera == CalcOperaTypes.NUL)
+//                            calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+
+                        break;
+                    case PER:
+
+                        break;
+                    case REC:
+                        if (foreMathOpera == CalcOperaTypes.EQL || foreMathOpera == CalcOperaTypes.NUL) {
+                            calcData.setIntermediateValue(calcData.getResultValue());
+                            preMathOpera = newMathOpera;
+                        }
+                        try {
+//                            String tmp = new BigDecimal("1").divide(calcData.getIntermediateValue(), MAX_LENGTH, BigDecimal.ROUND_CEILING).toPlainString();
+//                            calcData.setIntermediateValue(new BigDecimal(deleteExtraZeros(tmp)));
+                            calcData.setIntermediateValue(new BigDecimal("1").divide(calcData.getIntermediateValue(), MAX_LENGTH, BigDecimal.ROUND_CEILING).stripTrailingZeros());
+                        } catch (ArithmeticException e) {
+                            if (calcData.getIntermediateValue().intValue() == 0) {
+                                illegalStatus = true;
+                                CalcShowStr = "Illegal zero!";
+                                return;
+                            }
+                        }
+                        CalcShowStr = calcData.getIntermediateValue().toString();
+                        break;
+                    case SGN:
+                        if (foreMathOpera == CalcOperaTypes.EQL) {
+                            calcData.setIntermediateValue(calcData.getResultValue());
+                            preMathOpera = newMathOpera;
+                        }
+                        if (calcData.getIntermediateValue().compareTo(new BigDecimal("0.0")) >= 0) {//positive
+                            calcData.setIntermediateValue(new BigDecimal("-" + calcData.getIntermediateValue().toString()));
+                        } else {
+                            calcData.setIntermediateValue(new BigDecimal(calcData.getIntermediateValue().toString().substring(1)));
+                        }
+                        calcData.setIntegerStr(String.valueOf(calcData.getIntermediateValue().intValue()));
+                        calcData.setDecimalStr(getDecimalStr(calcData.getIntermediateValue().toString()));
+                        CalcShowStr = calcData.getIntermediateValue().toString();
+                        break;
+                    case DEL:
+                        break;
+                    case CLE:
+                        calcData.setIntegerStr("0");
+                        calcData.setDecimalStr("");
+                        calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+                        calcData.setDotStatus(false);
+                        CalcShowStr = calcData.getIntermediateValue().toString();
+                        break;
+                    case CLR:
+                        preMathOpera = CalcOperaTypes.NUL;
+                        newMathOpera = CalcOperaTypes.NUL;
+                        calcData.setResultValue(new BigDecimal("0"));
+                        calcData.setIntermediateValue(new BigDecimal("0"));
+                        calcData.setIntegerStr("0");
+                        calcData.setDecimalStr("");
+                        calcData.setOperaCounts(CalcData.OPERA_CNT_NONE);
+                        calcData.setDotStatus(false);
+                        CalcShowStr = calcData.getIntermediateValue().toString();
+                        break;
+                }
+                if (newMathOpera == CalcOperaTypes.EQL) {
+                    calcData.setResultValue(calcData.getIntermediateValue());
+                }
+            } else if (calcData.getOperaCounts() == CalcData.OPERA_CNT_NONE) {
+                if (newMathOpera == CalcOperaTypes.EQL) {
+                    calcData.setIntermediateValue(new BigDecimal("0"));
+                    calcData.setIntegerStr("0");
+                    calcData.setDecimalStr("");
+                    newMathOpera = CalcOperaTypes.NUL;
+                }
+                switch (calcData.getCalcOperaTypes()) {
+                    case ONE:
+                        calcData.setInNumber(1);
+                        break;
+                    case TWO:
+                        calcData.setInNumber(2);
+                        break;
+                    case THR:
+                        calcData.setInNumber(3);
+                        break;
+                    case FOU:
+                        calcData.setInNumber(4);
+                        break;
+                    case FIV:
+                        calcData.setInNumber(5);
+                        break;
+                    case SIX:
+                        calcData.setInNumber(6);
+                        break;
+                    case SEV:
+                        calcData.setInNumber(7);
+                        break;
+                    case EIG:
+                        calcData.setInNumber(8);
+                        break;
+                    case NIN:
+                        calcData.setInNumber(9);
+                        break;
+                    case ZER:
+                        calcData.setInNumber(0);
+                        break;
+                }
+                preMathOpera = newMathOpera;
+                foreMathOpera = newMathOpera;
+                if (calcData.getDotStatus()) {//Dot is on
+                    if (calcData.getIntegerStr().length() + calcData.getDecimalStr().length() <= MAX_LENGTH) {
+                        calcData.setDecimalStr(calcData.getDecimalStr() + calcData.getInNumber().toString());
+                    }
+                    CalcShowStr = calcData.getIntegerStr() + "." + calcData.getDecimalStr();
+                } else {
+                    if (calcData.getIntegerStr().length() + calcData.getDecimalStr().length() < MAX_LENGTH) {
+                        calcData.setIntegerStr(String.valueOf(Long.parseLong(calcData.getIntegerStr()) * XX_CARRY + calcData.getInNumber()));//add integer
+                    }
+                    CalcShowStr = calcData.getIntegerStr();
+                }
+                calcData.setIntermediateValue(new BigDecimal(CalcShowStr));
+            } else if (calcData.getOperaCounts() == CalcData.OPERA_CNT_MULTI) {
+                switch (calcData.getCalcOperaTypes()) {
+                    case ADD:
+                    case SUB:
+                    case MUL:
+                    case DIV:
+                    case EQL:
+                        foreMathOpera = newMathOpera;
+                        newMathOpera = calcData.getCalcOperaTypes();
+                        equleCalculation(calcData);
+                        break;
+                }
+                if (newMathOpera != CalcOperaTypes.EQL && newMathOpera != CalcOperaTypes.NUL) {
+                    calcData.setIntermediateValue(new BigDecimal("0"));
+                    calcData.setIntegerStr("0");
+                    calcData.setDecimalStr("");
+                }
+
+                calcData.setDotStatus(false);
+                if (illegalStatus) {
+                    CalcShowStr = "Illegal zero!";
+                    return;
+                }
+                CalcShowStr = calcData.getResultValue().toString();
+
+
+            } else {
+                switch (calcData.getCalcOperaTypes()) {
+                    case EQL:
+                        equleCalculation(calcData);
+                        break;
+                    case ADD:
+                    case SUB:
+                    case MUL:
+                    case DIV:
+                        calcData.setIntermediateValue(new BigDecimal("0"));
+                        calcData.setIntegerStr("0");
+                        calcData.setDecimalStr("");
+                        break;
+                }
+                foreMathOpera = newMathOpera;
+                newMathOpera = calcData.getCalcOperaTypes();
+
+                calcData.setDotStatus(false);
+                CalcShowStr = calcData.getResultValue().toString();
+
+            }
+        }
+
+    }
+
+    private void equleCalculation(CalcData calcData) {
+        switch (preMathOpera) {
+            case ADD:
+                calcData.setResultValue(calcData.getResultValue().add(calcData.getIntermediateValue()));
+                break;
+            case SUB:
+                calcData.setResultValue(calcData.getResultValue().subtract(calcData.getIntermediateValue()));
+                break;
+            case DIV:
+                try {
+                    calcData.setResultValue(calcData.getResultValue().divide(calcData.getIntermediateValue(), MAX_LENGTH, BigDecimal.ROUND_CEILING));
+                } catch (ArithmeticException e) {
+                    if (calcData.getIntermediateValue().intValue() == 0) {
+                        illegalStatus = true;
+                        return;
+                    }
+                }
+                break;
+            case MUL:
+                calcData.setResultValue(calcData.getResultValue().multiply(calcData.getIntermediateValue()));
+                break;
+            case NUL:
+            case EQL:
+//                    calcData.setIntermediateValue();
+                calcData.setResultValue(calcData.getIntermediateValue());
+                break;
+        }
+//        calcData.setIntermediateValue(calcData.getResultValue());
+        // 1. Cut decimal scale to 16
+        // 2. Cut "000" string away
+        String tmpString = calcData.getResultValue().setScale(MAX_LENGTH, BigDecimal.ROUND_CEILING).toPlainString();
+        calcData.setResultValue(new BigDecimal(deleteExtraZeros(tmpString)));
+//        calcData.setResultValue(new BigDecimal(calcData.getResultValue().setScale(MAX_LENGTH, BigDecimal.ROUND_CEILING).stripTrailingZeros().toPlainString()));
+
+    }
+
+    public String getCalcShowStr() {
+        if (CalcShowStr.contains(".")) {
+            if (CalcShowStr.length() <= MAX_LENGTH) {
+                return CalcShowStr;
+            } else {
+                return CalcShowStr.substring(0, MAX_LENGTH);
+            }
+        } else {
+            if (CalcShowStr.length() < MAX_LENGTH) {
+                return CalcShowStr;
+            } else {
+                return CalcShowStr.substring(0, MAX_LENGTH);
+
+            }
+        }
+    }
+
+    //    /**
+//     * 清零
+//     * @param str 原始字符串
+//     * @return
+//     */
+//    public static String trim(String str) {
+//        if (str.indexOf(".") != -1 && str.charAt(str.length() - 1) == '0') {
+//            return trim(str.substring(0, str.length() - 1));
+//        } else {
+//            return str.charAt(str.length() - 1) == '.' ? str.substring(0, str.length() - 1) : str;
+//        }
+//    }
+    public static String deleteExtraZeros(String str) {
+        if (str.contains(".")) {
+            for (int i = str.length() - 1; i >= 0; i--) {
+                if (str.charAt(i) == '.') {
+                    return str.substring(0, i);
+                } else if (str.charAt(i) != '0') {
+                    return str.substring(0, i + 1);
+                }
+            }
+        }
+        return str;
+    }
+
+    public static BigDecimal BigDecimalSqrt(BigDecimal A, final int SCALE) {
+        BigDecimal x0 = new BigDecimal("0");
+        BigDecimal x1 = new BigDecimal(Math.sqrt(A.doubleValue()));
+        while (!x0.equals(x1)) {
+            x0 = x1;
+            x1 = A.divide(x0, SCALE, BigDecimal.ROUND_HALF_UP);
+            x1 = x1.add(x0);
+            x1 = x1.divide(new BigDecimal("2"), SCALE, BigDecimal.ROUND_HALF_UP);
+        }
+        return x1;
+    }
+
+    public static String getDecimalStr(String str) {
+        if (str.contains(".")) {
+            return str.substring(str.indexOf(".") + 1);
+        } else {
+            return "";
+        }
+    }
+}
