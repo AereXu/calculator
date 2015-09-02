@@ -203,14 +203,13 @@ public class CalcCalculate {
                         equleCalculation(calcData);
                         break;
                 }
+                if (illegalStatus) {
+                    return;
+                }
                 calcData.setIntegerStr("0");
                 calcData.setDecimalStr("");
                 editbal = false;
                 calcData.setDotStatus(false);
-                if (illegalStatus) {
-                    CalcShowStr = "Illegal zero!";
-                    return;
-                }
                 calcData.setIntermediateTwo(calcData.getResultValue());
                 CalcShowStr = calcData.getResultValue().toString();
             } else {
@@ -227,6 +226,9 @@ public class CalcCalculate {
                     case MUL:
                     case DIV:
                         break;
+                }
+                if (illegalStatus) {
+                    return;
                 }
                 calcResetInput(calcData);
                 calcData.setIntermediateTwo(calcData.getResultValue());
@@ -272,12 +274,19 @@ public class CalcCalculate {
                 } catch (ArithmeticException e) {
                     if (calcData.getIntermediateOne().intValue() == 0) {
                         illegalStatus = true;
+                        CalcShowStr = "Illegal zero!";
                         return;
                     }
                 }
                 break;
             case MUL:
                 calcData.setResultValue(calcData.getIntermediateTwo().multiply(calcData.getIntermediateOne()));
+                if (calcData.getResultValue().compareTo(new BigDecimal("99999999999999999999999999999999")) > 0
+                        || calcData.getResultValue().compareTo(new BigDecimal("-99999999999999999999999999999999")) < 0) {
+                    illegalStatus = true;
+                    CalcShowStr = "Exceed number range!";
+                    return;
+                }
                 break;
             case NUL:
             case EQL:
@@ -317,7 +326,7 @@ public class CalcCalculate {
 
     //    /**
 //     * 清零
-//     * @param str 原始字符串
+//     * @param str 原始字符�
 //     * @return
 //     */
 //    public static String trim(String str) {
