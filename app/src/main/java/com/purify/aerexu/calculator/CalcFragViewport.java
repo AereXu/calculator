@@ -1,13 +1,13 @@
 package com.purify.aerexu.calculator;
 
-import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.purify.aerexu.calculator.entity.CalcStrings;
 
 
 public class CalcFragViewport extends Fragment {
@@ -19,8 +19,17 @@ public class CalcFragViewport extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_calc_viewport, container, false);
     }
-    public void updateCalcResult(String calcResult){
-        TextView calcResultView = (TextView)getActivity().findViewById(R.id.calcViewportTextView);
-        calcResultView.setText(calcResult);
+    public void updateCalcResult(CalcStrings calcStrings){
+        TextView calcTmpView = (TextView)getActivity().findViewById(R.id.calcViewportResultTV);
+        calcTmpView.setText(calcStrings.getResultStr());
+        calcTmpView = (TextView)getActivity().findViewById(R.id.calcViewportIntermediateOneTV);
+        calcTmpView.setText(calcStrings.getIntermediateOneStr());
+        calcTmpView = (TextView)getActivity().findViewById(R.id.calcViewportIntermediateTwoTV);
+        calcTmpView.setText(calcStrings.getIntermediateTwoStr());
+        calcTmpView = (TextView)getActivity().findViewById(R.id.calcViewportOperatorTV);
+        calcTmpView.setText(calcStrings.getCalcOperatorStr());
     }
+
+
+
 }

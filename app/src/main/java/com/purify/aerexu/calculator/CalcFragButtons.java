@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.purify.aerexu.calculator.entity.CalcStrings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,9 @@ import java.util.Map;
 public class CalcFragButtons extends Fragment implements Button.OnClickListener{
     private Map<Integer, Button> buttonMap = new HashMap<>();
     private View view;
+    private CalcStrings calcStrings;
     public CalcFragButtons() {
+        calcStrings = new CalcStrings();
     }
 
     @Override
@@ -65,6 +69,6 @@ public class CalcFragButtons extends Fragment implements Button.OnClickListener{
     OnButtonClickedListener mCallback;
     // Container Activity must implement this interface
     public interface OnButtonClickedListener {
-        public void onButtonClicked(String calcResult);
+        void onButtonClicked(CalcStrings calcStrings);
     }
 }

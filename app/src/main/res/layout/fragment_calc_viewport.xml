@@ -1,12 +1,49 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.purify.aerexu.calculator.CalcFragViewport">
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.purify.aerexu.calculator.CalcFragViewport"
+    android:stretchColumns="0">
 
-    <!-- TODO: Update blank fragment layout -->
+    <TableRow android:gravity="end">
+        <TextView
+            android:id="@+id/calcViewportIntermediateTwoTV"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:gravity="end"
+            android:text="@string/calc_empty"
+            android:textSize="25sp"/>
+    </TableRow>
+    <TableRow android:gravity="end">
+        <TextView
+            android:id="@+id/calcViewportOperatorTV"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:gravity="end"
+            android:text="@string/calc_empty"
+            android:textSize="25sp"/>
+    </TableRow>
+    <TableRow android:gravity="end">
     <TextView
-        android:id="@+id/calcViewportTextView"
+        android:id="@+id/calcViewportIntermediateOneTV"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="fill_parent"
+        android:gravity="end"
+        android:text="@string/calc_empty"
+        android:textSize="25sp"/>
+    </TableRow>
 
-</FrameLayout>
+    <TableRow android:gravity="end">
+        <TextView
+            android:id="@+id/calcViewportResultTV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/calc_viewport"
+            android:gravity="end"
+            android:focusableInTouchMode="false"
+            android:alpha="50"
+            android:singleLine="true"
+            android:textSize="30sp" />
+    </TableRow>
+
+</TableLayout>

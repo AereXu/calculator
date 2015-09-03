@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.purify.aerexu.calculator.entity.CalcStrings;
+
 
 public class CalcMainActivity extends Activity
         implements CalcFragButtons.OnButtonClickedListener {
@@ -30,7 +32,7 @@ public class CalcMainActivity extends Activity
     }
 
     @Override
-    public void onButtonClicked(String calcResult) {
+    public void onButtonClicked(CalcStrings calcResult) {
         CalcFragViewport calcFragViewport = (CalcFragViewport)fm.findFragmentById(R.id.viewport_container);
         calcFragViewport.updateCalcResult(calcResult);
     }

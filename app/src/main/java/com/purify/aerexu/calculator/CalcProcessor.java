@@ -3,6 +3,7 @@ package com.purify.aerexu.calculator;
 import com.purify.aerexu.calculator.entity.CalcCalculate;
 import com.purify.aerexu.calculator.entity.CalcData;
 import com.purify.aerexu.calculator.entity.CalcOperaTypes;
+import com.purify.aerexu.calculator.entity.CalcStrings;
 
 /**
  * Created by AereXu on 2015/8/22.
@@ -105,7 +106,12 @@ public class CalcProcessor implements CalcProcess {
     }
 
     @Override
-    public String getCalcResult() {
-        return calcCalculate.getCalcShowStr();
+    public CalcStrings getCalcResult() {
+        CalcStrings calcStrings = new CalcStrings();
+        calcStrings.setResultStr(calcCalculate.getCalcShowStr());
+        calcStrings.setIntermediateOneStr(calcCalculate.getIntermediateOneStr());
+        calcStrings.setIntermediateTwoStr(calcCalculate.getIntermediateTwoStr());
+        calcStrings.setCalcOperatorStr(calcCalculate.getCalcOperatorStr());
+        return calcStrings;
     }
 }
